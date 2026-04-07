@@ -1,26 +1,67 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+    constructor(
+        private prisma: PrismaService,
+        private jwtService: JwtService,
+    ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+    async validateUser(email: string, password: string) {
+        const admin = await this.prisma.admin.findUnique({
+        where: { email },
+        });
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+        if (!admin) {
+        throw new UnauthorizedException('Invalid credentials');
+        }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+        if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+        }
+
+        return admin;
+    }
+
+    // login session
+    async login(email: string, password: string) {
+        const admin = await this.validateUser(email, password);
+
+        const payload = {
+            sub: admin.id,
+            email: admin.email,
+            role: admin.role,
+        };
+
+        const now = new Date();
+
+        return {
+            access_token: this.jwtService.sign(payload),
+            user: {
+                id: admin.id,
+                email: admin.email,
+                role: admin.role,
+                lastLoginAt: now,
+                lastLoginRelative: now.toISOString(),
+            },
+        };
+    }
+
+    // register session
+    async register(email: string, password: string) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        return this.prisma.admin.create({
+            data: {
+                email,
+                username: email,
+                password: hashedPassword,
+            },
+        });
+    }
 }

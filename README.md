@@ -26,6 +26,28 @@ nest g resource modules/profile
 nest g resource modules/about
 nest g resource modules/auth
 
-============ #step3 ============
+============ #step4 ============
 rm -rf src/modules/*/entities
 rm src/modules/**/*.spec.ts
+
+============ #step5 ============
+npm install @nestjs/jwt @nestjs/passport passport passport-jwt
+npm install @nestjs/config
+npm install bcrypt
+npm install class-validator class-transformer
+npm install -D @types/bcrypt
+
+============ #step6 ============
+npx prisma init
+=> membuat isi schema dulu
+npx prisma generate
+hapus file : prisma.config.ts
+
+=> pakai prisma v5 <=
+npm uninstall prisma @prisma/client
+npm install prisma@5 @prisma/client@5
+npx prisma generate
+
+============ #step7 ============
+npm install -D @types/multer
+=> agar untuk upload foto <=
