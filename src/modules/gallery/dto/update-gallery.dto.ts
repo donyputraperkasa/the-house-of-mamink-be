@@ -1,4 +1,15 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateGalleryDto } from './create-gallery.dto';
+import { IsOptional, IsString, IsDateString } from 'class-validator';
 
-export class UpdateGalleryDto extends PartialType(CreateGalleryDto) {}
+export class UpdateGalleryDto {
+    @IsOptional()
+    @IsString()
+    title?: string;
+
+    @IsOptional()
+    @IsString()
+    description?: string;
+
+    @IsOptional()
+    @IsString()
+    image?: string;
+}

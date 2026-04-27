@@ -1,9 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { 
+    Controller, 
+    Get, 
+    Post, 
+    Body, 
+    Patch, 
+    Param, 
+    Delete, 
+    UseGuards, 
+    UseInterceptors, 
+    UploadedFile } from '@nestjs/common';
 import { ActivityService } from './activity.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateActivityDto } from './dto/create-activity.dto';
-import { UpdateActivityDto } from './dto/update-activity.dto';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 

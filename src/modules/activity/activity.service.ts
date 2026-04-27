@@ -44,7 +44,7 @@ export class ActivityService {
     }
 
     async update(id: number, dto: UpdateActivityDto) {
-        console.log('UPDATE DTO:', dto); // 🔍 debug
+        console.log('UPDATE ACTIVITY DTO:', dto); // 🔍 debug
 
         const existing = await this.prisma.activity.findUnique({
             where: { id },

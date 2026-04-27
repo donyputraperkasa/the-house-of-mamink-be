@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGalleryDto } from './dto/create-gallery.dto';
 import { UpdateGalleryDto } from './dto/update-gallery.dto';
@@ -7,42 +7,70 @@ import { UpdateGalleryDto } from './dto/update-gallery.dto';
 export class GalleryService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createGalleryDto: CreateGalleryDto) {
+  create(dto: CreateGalleryDto) {
+    console.log('CREATE GALLERY DTO:', dto);
+
+    if (!dto || !dto.title) {
+      throw new BadRequestException('Title is required');
+    }
+
     return this.prisma.gallery.create({
-      data: createGalleryDto,
+      data: {
+        title: dto.title,
+        description: dto.description ?? '',
+        image: dto.image ?? '',
+      },
     });
   }
 
-  async findAll() {
+  findAll() {
     return this.prisma.gallery.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: number) {
-    const data = await this.prisma.gallery.findUnique({
+    const gallery = await this.prisma.gallery.findUnique({
       where: { id },
     });
 
-    if (!data) {
+    if (!gallery) {
       throw new NotFoundException('Gallery not found');
     }
 
-    return data;
+    return gallery;
   }
 
-  async update(id: number, updateGalleryDto: UpdateGalleryDto) {
-    await this.findOne(id);
+  async update(id: number, dto: UpdateGalleryDto) {
+    console.log('UPDATE GALLERY DTO:', dto);
 
-    return this.prisma.gallery.update({
+    const existing = await this.prisma.gallery.findUnique({
       where: { id },
-      data: updateGalleryDto,
     });
+
+    if (!existing) {
+      throw new NotFoundException('Gallery not found');
+    }
+
+    const data: any = {};
+
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.image !== undefined) data.image = dto.image;
+
+    console.log('FINAL UPDATE DATA:', data);
+
+    const updated = await this.prisma.gallery.update({
+      where: { id },
+      data,
+    });
+
+    console.log('UPDATED RESULT:', updated);
+
+    return updated;
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
-
+  remove(id: number) {
     return this.prisma.gallery.delete({
       where: { id },
     });

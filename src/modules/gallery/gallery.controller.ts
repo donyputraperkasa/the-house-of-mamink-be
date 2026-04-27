@@ -20,9 +20,8 @@ import { UpdateGalleryDto } from './dto/update-gallery.dto';
 const storage = diskStorage({
   destination: './uploads',
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueName + extname(file.originalname));
   },
 });
 
@@ -31,7 +30,20 @@ export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', { storage }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage,
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+          return cb(new Error('Only image files allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 2 * 1024 * 1024,
+      },
+    }),
+  )
   create(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: CreateGalleryDto,
@@ -53,7 +65,20 @@ export class GalleryController {
   }
 
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('image', { storage }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage,
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+          return cb(new Error('Only image files allowed'), false);
+        }
+        cb(null, true);
+      },
+      limits: {
+        fileSize: 2 * 1024 * 1024,
+      },
+    }),
+  )
   update(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() file: Express.Multer.File,
