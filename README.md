@@ -57,3 +57,4 @@ npm install -D @types/multer
 ============ #step8 ============
 npm install @nestjs/jwt @nestjs/passport passport passport-jwt bcrypt
 npm install -D @types/passport-jwt @types/bcrypt# the-house-of-mamink-be
+# the-house-of-mamink-be
